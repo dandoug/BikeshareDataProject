@@ -2,6 +2,7 @@ import csv
 import pprint
 import datetime
 import time
+import numpy as np
 
 ## Filenames
 chicago = 'chicago.csv'
@@ -166,24 +167,104 @@ def popular_hour(city_file, time_period):
 
 
 def trip_duration(city_file, time_period):
-    '''TODO: fill out docstring with description, arguments, and return values.
-    Question: What is the total trip duration and average trip duration?
     '''
-    # TODO: complete function
-
-
-def popular_stations(city_file, time_period):
-    '''TODO: fill out docstring with description, arguments, and return values.
-    Question: What is the most popular start station and most popular end station?
+    Calculate the total trip duration and average trip duration and print them out
+    Args:
+        city_file: a list of dictionaries as loaded by load_city_file(), below
+        time_period: the filter that was used to restrict the data
+    Return:
+        none
     '''
-    # TODO: complete function
+    totalSeconds = 0;
+    numTrips = 0;
+    for row in city_file:
+        totalSeconds += row['dur']
+        numTrips +=1
+    print("The total trip duration is {} seconds and the average trip duration is {} seconds for filter {} computed over {} trips"
+                        .format(totalSeconds,(totalSeconds/numTrips),time_period,numTrips))
 
 
-def popular_trip(city_file, time_period):
-    '''TODO: fill out docstring with description, arguments, and return values.
-    Question: What is the most popular trip?
+def build_dest_array(city_file, stnNames):
     '''
-    # TODO: complete function
+    Build up a list of station names from the city_file and a two dimensional array that counts the
+    number of trips between stations (start=row, end=column)
+
+    Args:
+        city_file: a list of dictionaries as loaded by load_city_file(), below
+        stnNames: list of names of stations, initially empty, will be filled in
+    Returns:
+        a two dimensional array that counts the number of trips between stations
+    '''
+    trips = None  # special case the start
+    for row in city_file:
+        s = row['start']
+        e = row['end']
+        newNames = 0
+        if s not in stnNames:
+            stnNames.append(s)
+            newNames += 1
+        if e not in stnNames:
+            stnNames.append(e)
+            newNames += 1
+        # Add anything?
+        if newNames > 0:
+            # special case first one
+            if type(trips) == type(None):
+                trips = np.zeros((newNames, newNames))
+            else:
+                newSize = len(stnNames)
+                oldSize = newSize - newNames
+                # expand trips by adding new row and column
+                trips = np.vstack((trips, np.zeros((newNames, oldSize)) ))
+                trips = np.hstack((trips, np.zeros((newSize, newNames)) ))
+        # now find indexes.  start is row, end is column
+        si = stnNames.index(s)
+        ei = stnNames.index(e)
+        # record another trip between the two endpoints
+        trips[si, ei] += 1
+    return trips
+
+
+def popular_stations(stnNames, trips):
+    '''
+    Find the most popular start station and most popular end station and print them out.
+
+    Args:
+        stnNames: list of station names, provides indexes into trips matrix
+        trips: two dimensional matrix (start=rows, end=columns) of trip frequencies
+    Returns:
+        none
+    '''
+    starts = np.sum(trips, axis=1)  # sum across rows
+    ends   = np.sum(trips, axis=0)  # sum down columns
+
+    psi = np.argmax(starts)
+    popularStart = stnNames[ psi ]
+    pei = np.argmax(ends)
+    popularEnd   = stnNames[ pei ]
+
+    print("Using the supplied filter,")
+    print("\tThe most popular start station is '{}' with {} trips originating there".format(popularStart,int(starts[psi])))
+    print("\tThe most popular end station is '{}' with {} trips ending there".format(popularEnd,int(ends[pei])))
+
+
+def popular_trip(stnNames, trips):
+    '''
+    Find the the most popular trip and print it out.
+
+    Args:
+        stnNames: list of station names, provides indexes into trips matrix
+        trips: two dimensional matrix (start=rows, end=columns) of trip frequencies
+    Returns:
+        none
+    '''
+    maxTrip = np.argmax(trips) # raveled index
+    maxStartIx = maxTrip // len(stnNames) # compute row
+    maxEndIx = maxTrip % len(stnNames) # compute column
+    maxTripOccurs = int(trips[maxStartIx, maxEndIx])
+    print("Using the supplied filter,")
+    print("\tThe most popular trip is from '{}' to '{}' which occurred {} times"
+          .format(stnNames[maxStartIx], stnNames[maxEndIx], maxTripOccurs))
 
 
 def users(city_file, time_period):
@@ -307,88 +388,120 @@ def statistics():
     print("\nLoaded {} records from {} using filter".format(len(city_file), city, time_period))
     print("That took %s seconds." % (time.time() - start_time))
 
-    firstOrNext = 'first'
+    if len(city_file) == 0:
+        print("No statistics to compute becuase the filter selected no trips.")
+    else:
+        firstOrNext = 'first'
 
 
-    # What is the most popular month for start time?
-    if time_period[0] == 'none':
-        print('\nCalculating the {} statistic...'.format(firstOrNext))
+        # What is the most popular month for start time?
+        if time_period[0] == 'none':
+            print('\nCalculating the {} statistic...'.format(firstOrNext))
+            start_time = time.time()
+
+            popular_month(city_file, time_period)
+
+            print("That took %s seconds." % (time.time() - start_time))
+            firstOrNext = 'next'
+
+
+        # What is the most popular day of week (Monday, Tuesday, etc.) for start time?
+        if time_period[0] == 'none' or time_period[0] == 'month':
+            print("\nCalculating the {} statistic...".format(firstOrNext))
+            start_time = time.time()
+
+            popular_day(city_file, time_period)
+
+            print("That took %s seconds." % (time.time() - start_time))
+            firstOrNext = 'next'
+
+
+
+        # What is the most popular hour of day for start time?
+        print("\nCalculating the next statistic...")
         start_time = time.time()
 
-        popular_month(city_file, time_period)
+        popular_hour(city_file, time_period)
 
         print("That took %s seconds." % (time.time() - start_time))
-        firstOrNext = 'next'
 
 
-    # What is the most popular day of week (Monday, Tuesday, etc.) for start time?
-    if time_period[0] == 'none' or time_period[0] == 'month':
-        print("\nCalculating the {} statistic...".format(firstOrNext))
+        # What is the total trip duration and average trip duration?
+        print("\nCalculating the next statistic...")
         start_time = time.time()
 
-        popular_day(city_file, time_period)
+        trip_duration(city_file, time_period)
 
         print("That took %s seconds." % (time.time() - start_time))
-        firstOrNext = 'next'
 
-    print("\nCalculating the next statistic...")
-    start_time = time.time()
+        # Build up a list of station names and a two dimensional array that counts the
+        # number of trips between stations
+        print("\nComputing trip matrix...")
+        start_time = time.time()
+        stnNames = []
+        trips = build_dest_array(city_file, stnNames)
+        print("That took %s seconds." % (time.time() - start_time))
 
-    popular_hour(city_file, time_period)
 
-    print("That took %s seconds." % (time.time() - start_time))
-    print("\nCalculating the next statistic...")
+        # What is the most popular start station and most popular end station?
+        print("\nCalculating the next statistic...")
+        start_time = time.time()
 
-    start_time = time.time()
+        popular_stations(stnNames, trips)
 
-    # What is the total trip duration and average trip duration?
-    # TODO: call trip_duration function and print the results
+        print("That took %s seconds." % (time.time() - start_time))
 
-    print("That took %s seconds." % (time.time() - start_time))
-    print("\nCalculating the next statistic...")
-    start_time = time.time()
 
-    # What is the most popular start station and most popular end station?
-    # TODO: call popular_stations function and print the results
 
-    print("That took %s seconds." % (time.time() - start_time))
-    print("\nCalculating the next statistic...")
-    start_time = time.time()
+        # What is the most popular trip?
+        print("\nCalculating the next statistic...")
+        start_time = time.time()
 
-    # What is the most popular trip?
-    # TODO: call popular_trip function and print the results
+        popular_trip(stnNames, trips)
 
-    print("That took %s seconds." % (time.time() - start_time))
-    print("\nCalculating the next statistic...")
-    start_time = time.time()
+        print("That took %s seconds." % (time.time() - start_time))
 
-    # What are the counts of each user type?
-    # TODO: call users function and print the results
 
-    print("That took %s seconds." % (time.time() - start_time))
-    print("\nCalculating the next statistic...")
-    start_time = time.time()
 
-    # What are the counts of gender?
-    # TODO: call gender function and print the results
+        print("\nCalculating the next statistic...")
+        start_time = time.time()
 
-    print("That took %s seconds." % (time.time() - start_time))
-    print("\nCalculating the next statistic...")
-    start_time = time.time()
+        # What are the counts of each user type?
+        # TODO: call users function and print the results
 
-    # What are the earliest, most recent, and most popular birth years?
-    # TODO: call birth_years function and print the results
+        print("That took %s seconds." % (time.time() - start_time))
 
-    print("\nThat took %s seconds." % (time.time() - start_time))
 
-    # Display five lines of data at a time if user specifies that they would like to
-    display_data()
+
+        print("\nCalculating the next statistic...")
+        start_time = time.time()
+
+        # What are the counts of gender?
+        # TODO: call gender function and print the results
+
+        print("That took %s seconds." % (time.time() - start_time))
+
+
+
+        print("\nCalculating the next statistic...")
+        start_time = time.time()
+
+        # What are the earliest, most recent, and most popular birth years?
+        # TODO: call birth_years function and print the results
+
+        print("\nThat took %s seconds." % (time.time() - start_time))
+
+
+
+
+        # Display five lines of data at a time if user specifies that they would like to
+        display_data()
+
 
     # Restart?
     restart = input('\nWould you like to restart? Type \'yes\' or \'no\'.')
     if restart.lower() == 'yes':
         statistics()
-
 
 if __name__ == "__main__":
 	statistics()

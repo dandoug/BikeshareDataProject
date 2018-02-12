@@ -36,7 +36,11 @@ Even after wrangling, the data files are too large to be stored directly in gith
 The post-wrangled data files can be downloaded separately
 and extracted from [bikeshare.zip](https://s3.amazonaws.com/video.udacity-data.com/topher/2018/February/5a7a8bf0_bikeshare/bikeshare.zip)
 
+## Additional packages to install
+* [numpy](http://www.numpy.org)
+
 ## Resources
 * [stackoverflow.com post about converting csv file to list of dictionaries](https://stackoverflow.com/questions/21572175/convert-csv-file-to-list-of-dictionaries/21572244)
 * [csv.DictReader documentation](https://docs.python.org/3/library/csv.html#csv.DictReader)
 * [stackoverflow.com post for checking valid date](https://stackoverflow.com/questions/9987818/in-python-how-to-check-if-a-date-is-valid)
+* [numpy tutorial](https://docs.scipy.org/doc/numpy-dev/user/quickstart.html)
