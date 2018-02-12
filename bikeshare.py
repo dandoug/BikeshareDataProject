@@ -135,7 +135,7 @@ def popular_day(city_file, time_period):
     daysAccum = [0,0,0,0,0,0,0]
     for row in city_file:
         daysAccum[row['startTime'].weekday()] += 1
-    maxIx = 0 # let Jan be the most popular to start
+    maxIx = 0 # let Monday be the most popular to start
     for i in range(0,7):
         if daysAccum[i] > daysAccum[maxIx]:
             maxIx = i
@@ -146,10 +146,23 @@ def popular_day(city_file, time_period):
 
 
 def popular_hour(city_file, time_period):
-    '''TODO: fill out docstring with description, arguments, and return values.
-    Question: What is the most popular hour of day for start time?
     '''
-    # TODO: complete function
+     Calculate the most popular hour of day for start time and print it out
+    Args:
+        city_file: a list of dictionaries as loaded by load_city_file(), below
+        time_period: the filter that was used to restrict the data
+    Return:
+        none
+    '''
+    # 0-based indexing for totaling data by hour of day (0-23)
+    hoursAccum = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    for row in city_file:
+        hoursAccum[row['startTime'].hour] += 1
+    maxIx = 0 # let 00 be the most popular hour to start
+    for i in range(0,24):
+        if hoursAccum[i] > hoursAccum[maxIx]:
+            maxIx = i
+    print("The most popular hour of the day for filter {} is {} with {} occurances".format(time_period,maxIx,hoursAccum[maxIx]))
 
 
 def trip_duration(city_file, time_period):
@@ -321,8 +334,7 @@ def statistics():
     print("\nCalculating the next statistic...")
     start_time = time.time()
 
-    # What is the most popular hour of day for start time?
-    # TODO: call popular_day function and print the results
+    popular_hour(city_file, time_period)
 
     print("That took %s seconds." % (time.time() - start_time))
     print("\nCalculating the next statistic...")
