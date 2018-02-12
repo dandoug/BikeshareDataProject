@@ -50,7 +50,7 @@ def get_month():
             monthNum = newDate.month
             if (monthNum>6):
                 continue
-            print("Using {} for month nmber".format(monthNum))
+            print("Using {} for month number".format(monthNum))
             return monthNum
         except ValueError:
             correctDate = False
@@ -118,14 +118,31 @@ def popular_month(city_file, time_period):
     for i in range(1,13):
         if monthsAccum[i] > monthsAccum[maxIx]:
             maxIx = i
+    # just want some day with the maxIx month so strftime will print out the formated month name
     monDate = datetime.datetime(2017,maxIx,1)
     print("The most popular month for filter {} is {} with {} occurances".format(time_period,monDate.strftime('%B'),monthsAccum[maxIx]))
 
 def popular_day(city_file, time_period):
-    '''TODO: fill out docstring with description, arguments, and return values.
-    Question: What is the most popular day of week (Monday, Tuesday, etc.) for start time?
     '''
-    # TODO: complete function
+     Calculate the most popular day of week (Monday, Tuesday, etc.) for start time and print it out
+    Args:
+        city_file: a list of dictionaries as loaded by load_city_file(), below
+        time_period: the filter that was used to restrict the data
+    Return:
+        none
+    '''
+    # 0-based indexing for totaling data by day of week Monday=0, Sunday=6
+    daysAccum = [0,0,0,0,0,0,0]
+    for row in city_file:
+        daysAccum[row['startTime'].weekday()] += 1
+    maxIx = 0 # let Jan be the most popular to start
+    for i in range(0,7):
+        if daysAccum[i] > daysAccum[maxIx]:
+            maxIx = i
+    # May 1, 2017 was a Monday, so adding maxIx will give us a day with the right name
+    # can use strftime() to print out the full day name from index
+    dayDate = datetime.datetime(2017,5,1+maxIx)
+    print("The most popular day of the week for filter {} is {} with {} occurances".format(time_period,dayDate.strftime('%A'),daysAccum[maxIx]))
 
 
 def popular_hour(city_file, time_period):
@@ -296,8 +313,7 @@ def statistics():
         print("\nCalculating the {} statistic...".format(firstOrNext))
         start_time = time.time()
 
-        # TODO: call popular_day function and print the results
-        foo='bar'
+        popular_day(city_file, time_period)
 
         print("That took %s seconds." % (time.time() - start_time))
         firstOrNext = 'next'
