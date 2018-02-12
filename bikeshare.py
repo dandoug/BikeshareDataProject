@@ -304,10 +304,39 @@ def gender(city_file, time_period):
 
 
 def birth_years(city_file, time_period):
-    '''TODO: fill out docstring with description, arguments, and return values.
-    Question: What are the earliest, most recent, and most popular birth years?
     '''
-    # TODO: complete function
+    Calculate the earliest, most recent, and most popular birth years and print them out
+        Args:
+            city_file: a list of dictionaries as loaded by load_city_file(), below
+            time_period: the filter that was used to restrict the data
+        Return:
+            none
+    '''
+    yobAccum = {}
+    maxBirthYear = 0
+    minBirthYear = 999999
+    for row in city_file:
+        yob = row['yob']
+        if yob == 0:
+            continue # skip if not specified
+        if yob not in yobAccum:
+            yobAccum[yob] = 1
+        else:
+            yobAccum[yob] += 1
+        if yob < minBirthYear:
+            minBirthYear = yob
+        if yob > maxBirthYear:
+            maxBirthYear = yob
+    mostPopularYear = 0
+    for yob in yobAccum:
+        if mostPopularYear == 0 or yobAccum[yob] > yobAccum[mostPopularYear]:
+            mostPopularYear = yob
+    if mostPopularYear == 0:
+        print("Using the supplied filter, there were no birth year data available")
+    else:
+        print("Using the supplied filter, the birth year stats were as follows:")
+        print("\tEarliest: {}, most recent: {} and most popular year of birth: {} with {} occurrences"
+              .format(minBirthYear,maxBirthYear,mostPopularYear,yobAccum[mostPopularYear]))
 
 
 def display_data():
@@ -507,15 +536,13 @@ def statistics():
 
 
 
+        # What are the earliest, most recent, and most popular birth years?
         print("\nCalculating the next statistic...")
         start_time = time.time()
 
-        # What are the earliest, most recent, and most popular birth years?
-        # TODO: call birth_years function and print the results
+        birth_years(city_file, time_period)
 
         print("That took %s seconds." % (time.time() - start_time))
-
-
 
 
         # Display five lines of data at a time if user specifies that they would like to
