@@ -268,17 +268,39 @@ def popular_trip(stnNames, trips):
 
 
 def users(city_file, time_period):
-    '''TODO: fill out docstring with description, arguments, and return values.
-    Question: What are the counts of each user type?
     '''
-    # TODO: complete function
+    Calculate the counts of each user type and print them out
+        Args:
+            city_file: a list of dictionaries as loaded by load_city_file(), below
+            time_period: the filter that was used to restrict the data
+        Return:
+            none
+    '''
+    userTypeAccum = {'C':0, 'S':0, 'U':0}
+    for row in city_file:
+        utype = row['utype']
+        if utype in userTypeAccum:
+            userTypeAccum[utype] += 1
+    print("Using the supplied filter, the trips per user type were as follows:")
+    print("\tSubscriber: {}, Customer: {}, Unkonwn: {}".format(userTypeAccum['S'],userTypeAccum['C'],userTypeAccum['U']))
 
 
 def gender(city_file, time_period):
-    '''TODO: fill out docstring with description, arguments, and return values.
-    Question: What are the counts of gender?
     '''
-    # TODO: complete function
+    Calculate the counts of trips by each gender and print them out
+        Args:
+            city_file: a list of dictionaries as loaded by load_city_file(), below
+            time_period: the filter that was used to restrict the data
+        Return:
+            none
+    '''
+    genderTypeAccum = {'M':0, 'F':0, 'U':0}
+    for row in city_file:
+        gtype = row['gender']
+        if gtype in genderTypeAccum:
+            genderTypeAccum[gtype] += 1
+    print("Using the supplied filter, the trips per gender were as follows:")
+    print("\tMale: {}, Female: {}, Unkonwn: {}".format(genderTypeAccum['M'],genderTypeAccum['F'],genderTypeAccum['U']))
 
 
 def birth_years(city_file, time_period):
@@ -443,6 +465,7 @@ def statistics():
         print("That took %s seconds." % (time.time() - start_time))
 
 
+
         # What is the most popular start station and most popular end station?
         print("\nCalculating the next statistic...")
         start_time = time.time()
@@ -463,21 +486,22 @@ def statistics():
 
 
 
+        # What are the counts of each user type?
         print("\nCalculating the next statistic...")
         start_time = time.time()
 
-        # What are the counts of each user type?
-        # TODO: call users function and print the results
+        users(city_file, time_period)
 
         print("That took %s seconds." % (time.time() - start_time))
 
 
 
+
+        # What are the counts of gender?
         print("\nCalculating the next statistic...")
         start_time = time.time()
 
-        # What are the counts of gender?
-        # TODO: call gender function and print the results
+        gender(city_file, time_period)
 
         print("That took %s seconds." % (time.time() - start_time))
 
@@ -489,7 +513,7 @@ def statistics():
         # What are the earliest, most recent, and most popular birth years?
         # TODO: call birth_years function and print the results
 
-        print("\nThat took %s seconds." % (time.time() - start_time))
+        print("That took %s seconds." % (time.time() - start_time))
 
 
 
