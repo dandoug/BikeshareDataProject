@@ -339,19 +339,50 @@ def birth_years(city_file, time_period):
               .format(minBirthYear,maxBirthYear,mostPopularYear,yobAccum[mostPopularYear]))
 
 
-def display_data():
-    '''Displays five lines of data if the user specifies that they would like to.
+def display_data(city_file):
+    '''
+    Displays five lines of data if the user specifies that they would like to.
     After displaying five lines, ask the user if they would like to see five more,
     continuing asking until they say stop.
 
-    Args:
-        none.
-    Returns:
-        TODO: fill out return type and description (see get_city for an example)
+     Args:
+        city_file: a list of dictionaries as loaded by load_city_file(), below
+    Return:
+        none
     '''
-    display = input('Would you like to view individual trip data?'
-                    'Type \'yes\' or \'no\'. ')
-    # TODO: handle raw input and complete function
+    if not promptToContinue('Would you like to view individual trip data?'):
+        return
+
+    pp = pprint.PrettyPrinter(indent=4)
+    print("here are some lines of data")
+    cnt = 0
+    for row in city_file:
+        pp.pprint(row)
+        cnt += 1
+        if cnt % 5 == 0:
+            if not promptToContinue('Would you like to view five more rows?'):
+                return
+
+
+def promptToContinue(prompt):
+    '''
+    Present a prompt and collect a yes or now answer
+
+    Args:
+        prompt: prompt string to display
+    Returns:
+        True or False
+    '''
+    answer = None
+    while not answer:
+        display = input(prompt+
+                        '\nType \'yes\' or \'no\'. ').lower().strip()
+        if display.startswith('y'):
+            answer = 'yes'
+        elif display.startswith('n'):
+            answer = 'no'
+    return answer == 'yes'
+
 
 def load_city_file(city, time_period):
     '''Load data from the specified file into an in-memory structure for analysis
@@ -389,7 +420,7 @@ def load_city_file(city, time_period):
             rowDict = {}
             rowDict['startTime'] = datetime.datetime.strptime(row['Start Time'], DATETIME_FORMAT)
             rowDict['endTime'] = datetime.datetime.strptime(row['End Time'], DATETIME_FORMAT)
-            rowDict['dur'] = int(row['Trip Duration'])
+            rowDict['dur'] = int(float(row['Trip Duration']))
             rowDict['start'] = row['Start Station']
             rowDict['end'] = row['End Station']
             if row['User Type'] == 'Customer':
@@ -398,22 +429,28 @@ def load_city_file(city, time_period):
                 rowDict['utype'] = 'S'
             else:
                 rowDict['utype'] = 'U'
-            if row['Gender'] == 'Male':
-                rowDict['gender'] = 'M'
-            elif row['Gender'] == 'Female':
-                rowDict['gender'] = 'F'
-            else:
+            if 'Gender' not in row:
                 rowDict['gender'] = 'U'
-            if row['Birth Year']:
-                rowDict['yob'] = int(float(row['Birth Year']))
+            else:
+                if row['Gender'] == 'Male':
+                    rowDict['gender'] = 'M'
+                elif row['Gender'] == 'Female':
+                    rowDict['gender'] = 'F'
+                else:
+                    rowDict['gender'] = 'U'
+            if 'Birth Year' in row:
+                try:
+                    rowDict['yob'] = int(float(row['Birth Year']))
+                except ValueError:
+                    rowDict['yob'] = 0
             else:
                 rowDict['yob'] = 0
             city_file.append(rowDict)
             cnt += 1
             # print a . every 10000 rows
             if cnt % 10000 == 0:
-                #print('.', sep='', end='', flush=True)
-                break
+                print('.', sep='', end='', flush=True)
+                #break # uncomment break to exit after first 10000 rows
 
     return city_file
 
@@ -469,12 +506,13 @@ def statistics():
 
 
         # What is the most popular hour of day for start time?
-        print("\nCalculating the next statistic...")
+        print("\nCalculating the {} statistic...".format(firstOrNext))
         start_time = time.time()
 
         popular_hour(city_file, time_period)
 
         print("That took %s seconds." % (time.time() - start_time))
+        firstOrNext = 'next'
 
 
         # What is the total trip duration and average trip duration?
@@ -546,7 +584,7 @@ def statistics():
 
 
         # Display five lines of data at a time if user specifies that they would like to
-        display_data()
+        display_data(city_file)
 
 
     # Restart?
