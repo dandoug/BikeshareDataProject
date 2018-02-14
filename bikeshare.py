@@ -25,12 +25,12 @@ def get_city():
     result = None
     while not result:
         city = input('\nHello! Let\'s explore some US bikeshare data!\n'
-                 'Would you like to see data for Chicago, New York, or Washington?\n').lower().strip()
-        if city.startswith('c'):
+                 'Would you like to see data for \'Chicago\', \'New York\', or \'Washington\'?\n').lower().strip()
+        if city == 'chicago':
             result = chicago
-        elif city.startswith('n'):
+        elif city == 'new york':
             result = new_york_city
-        elif city.startswith('w'):
+        elif city == 'washington':
             result = washington
 
     print("Great!  We'll use the {} file.".format(result))
@@ -48,7 +48,8 @@ def get_month():
     result = None
     while not result:
         try:
-            month = input('\nWhich month? January, February, March, April, May, or June?\n').lower().strip()
+            month = input('\nWhich month? \'January\', \'February\', \'March\', \'April\', \'May\', or \'June\'?\n')\
+                .lower().strip()
             newDate = datetime.datetime.strptime(month,"%B")
             monthNum = newDate.month
             if (monthNum>6):
@@ -89,16 +90,16 @@ def get_time_period():
     '''
     result = None
     while not result:
-        time_period = input('\nWould you like to filter the data by month, day, or not at'
-                        ' all? Type "none" for no time filter.\n').lower().strip()
-        if time_period.startswith('m'):
+        time_period = input('\nWould you like to filter the data by \'month\', \'day\', or not at'
+                        ' all? Type \'none\' for no time filter.\n').lower().strip()
+        if time_period == 'month':
             month = get_month()
             result = ('month',month)
-        elif time_period.startswith('d'):
+        elif time_period == 'day':
             month = get_month()
             day = get_day(month)
             result = ('day',month,day)
-        elif time_period.startswith('n'):
+        elif time_period == 'none':
             result = ('none',)
 
     print("We'll use '{}' as a time period filter.".format(result))
