@@ -9,12 +9,13 @@ chicago = 'chicago.csv'
 new_york_city = 'new_york_city.csv'
 washington = 'washington.csv'
 
-## Constants
+## Define the datetime format for parsing from the data files
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
 def get_city():
     '''Asks the user for a city and returns the filename for that city's bike share data.
+       Accept unambiguous prefix and be lax about spelling.
 
     Args:
         none.
@@ -37,6 +38,7 @@ def get_city():
 
 def get_month():
     '''Asks the user for a month and returns the specified month.
+    Accepts any form that strptime() does with %B
 
     Args:
         none.
@@ -121,7 +123,8 @@ def popular_month(city_file, time_period):
             maxIx = i
     # just want some day with the maxIx month so strftime will print out the formated month name
     monDate = datetime.datetime(2017,maxIx,1)
-    print("The most popular month for filter {} is {} with {} occurances".format(time_period,monDate.strftime('%B'),monthsAccum[maxIx]))
+    print("The most popular month for filter {} is {} with {} occurances"
+          .format(time_period,monDate.strftime('%B'),monthsAccum[maxIx]))
 
 def popular_day(city_file, time_period):
     '''
@@ -143,7 +146,8 @@ def popular_day(city_file, time_period):
     # May 1, 2017 was a Monday, so adding maxIx will give us a day with the right name
     # can use strftime() to print out the full day name from index
     dayDate = datetime.datetime(2017,5,1+maxIx)
-    print("The most popular day of the week for filter {} is {} with {} occurances".format(time_period,dayDate.strftime('%A'),daysAccum[maxIx]))
+    print("The most popular day of the week for filter {} is {} with {} occurances"
+          .format(time_period,dayDate.strftime('%A'),daysAccum[maxIx]))
 
 
 def popular_hour(city_file, time_period):
@@ -163,7 +167,8 @@ def popular_hour(city_file, time_period):
     for i in range(0,24):
         if hoursAccum[i] > hoursAccum[maxIx]:
             maxIx = i
-    print("The most popular hour of the day for filter {} is {} with {} occurances".format(time_period,maxIx,hoursAccum[maxIx]))
+    print("The most popular hour of the day for filter {} is {} with {} occurances"
+          .format(time_period,maxIx,hoursAccum[maxIx]))
 
 
 def trip_duration(city_file, time_period):
@@ -180,8 +185,10 @@ def trip_duration(city_file, time_period):
     for row in city_file:
         totalSeconds += row['dur']
         numTrips +=1
-    print("The total trip duration is {} seconds and the average trip duration is {} seconds for filter {} computed over {} trips"
-                        .format(totalSeconds,(totalSeconds/numTrips),time_period,numTrips))
+    print(("The total trip duration is {} seconds and the average trip duration is {} "+
+           "seconds \n\t"
+           "for filter {} computed over {} trips")
+          .format(totalSeconds,(totalSeconds/numTrips),time_period,numTrips))
 
 
 def build_dest_array(city_file, stnNames):
@@ -244,7 +251,8 @@ def popular_stations(stnNames, trips):
     popularEnd   = stnNames[ pei ]
 
     print("Using the supplied filter,")
-    print("\tThe most popular start station is '{}' with {} trips originating there".format(popularStart,int(starts[psi])))
+    print("\tThe most popular start station is '{}' with {} trips originating there"
+          .format(popularStart,int(starts[psi])))
     print("\tThe most popular end station is '{}' with {} trips ending there".format(popularEnd,int(ends[pei])))
 
 
@@ -282,7 +290,8 @@ def users(city_file, time_period):
         if utype in userTypeAccum:
             userTypeAccum[utype] += 1
     print("Using the supplied filter, the trips per user type were as follows:")
-    print("\tSubscriber: {}, Customer: {}, Unkonwn: {}".format(userTypeAccum['S'],userTypeAccum['C'],userTypeAccum['U']))
+    print("\tSubscriber: {}, Customer: {}, Unkonwn: {}"
+          .format(userTypeAccum['S'],userTypeAccum['C'],userTypeAccum['U']))
 
 
 def gender(city_file, time_period):
@@ -350,17 +359,18 @@ def display_data(city_file):
     Return:
         none
     '''
-    if not promptToContinue('Would you like to view individual trip data?'):
+    if not promptToContinue('\nWould you like to view individual trip data?'):
         return
 
     pp = pprint.PrettyPrinter(indent=4)
     print("here are some lines of data")
     cnt = 0
     for row in city_file:
+        print()
         pp.pprint(row)
         cnt += 1
         if cnt % 5 == 0:
-            if not promptToContinue('Would you like to view five more rows?'):
+            if not promptToContinue('\nWould you like to view five more rows?'):
                 return
 
 
@@ -588,7 +598,7 @@ def statistics():
 
 
     # Restart?
-    restart = input('\nWould you like to restart? Type \'yes\' or \'no\'.')
+    restart = input('\n\nWould you like to restart? Type \'yes\' or \'no\'.')
     if restart.lower() == 'yes':
         statistics()
 
